@@ -21,6 +21,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
 import android.content.Context
+import android.content.pm.PackageManager.FEATURE_PC
 import android.hardware.input.InputManager
 import android.os.Handler
 import android.os.SystemProperties
@@ -72,6 +73,8 @@ class DesktopDisplayModeController(
             "persist.wm.debug.force_desktop_first_on_default_display_for_testing",
             false,
         )
+
+    private val isPc = context.packageManager.hasSystemFeature(FEATURE_PC)
 
     private val inputDeviceListener =
         object : InputManager.InputDeviceListener {
@@ -199,6 +202,12 @@ class DesktopDisplayModeController(
                 hasExternalDisplay,
             )
             if (isExtendedDisplayEnabled && hasExternalDisplay) {
+                return true
+            }
+            // PCs (FEATURE_PC) keep the desktop on their display, whatever input devices are
+            // attached, e.g. a desktop with a mouse but no touchpad
+            if (isPc) {
+                logV("canDesktopFirstModeBeEnabledOnDefaultDisplay: isPc=true")
                 return true
             }
             if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
