@@ -55,6 +55,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -124,7 +125,7 @@ public class LocalMediaManager implements BluetoothCallback {
         boolean wasEmpty = mCallbacks.isEmpty();
         if (!mCallbacks.contains(callback)) {
             mCallbacks.add(callback);
-            if (wasEmpty) {
+            if (wasEmpty && mInfoMediaManager != null) {
                 mInfoMediaManager.registerCallback(mMediaDeviceCallback);
             }
         }
@@ -134,7 +135,7 @@ public class LocalMediaManager implements BluetoothCallback {
      * Unregister to stop receiving callbacks for MediaDevice events
      */
     public void unregisterCallback(DeviceCallback callback) {
-        if (mCallbacks.remove(callback) && mCallbacks.isEmpty()) {
+        if (mCallbacks.remove(callback) && mCallbacks.isEmpty() && mInfoMediaManager != null) {
             mInfoMediaManager.unregisterCallback(mMediaDeviceCallback);
             unRegisterDeviceAttributeChangeCallback();
         }
@@ -327,6 +328,9 @@ public class LocalMediaManager implements BluetoothCallback {
      * Start scan connected MediaDevice
      */
     public void startScan() {
+        if (mInfoMediaManager == null) {
+            return;
+        }
         mInfoMediaManager.startScan();
     }
 
@@ -388,6 +392,9 @@ public class LocalMediaManager implements BluetoothCallback {
      * Stop scan MediaDevice
      */
     public void stopScan() {
+        if (mInfoMediaManager == null) {
+            return;
+        }
         mInfoMediaManager.stopScan();
     }
 
@@ -488,6 +495,9 @@ public class LocalMediaManager implements BluetoothCallback {
      * @param volume the value of volume
      */
     public void adjustSessionVolume(String sessionId, int volume) {
+        if (mInfoMediaManager == null) {
+            return;
+        }
         RoutingSessionInfo session = mInfoMediaManager.getRoutingSessionById(sessionId);
         if (session != null) {
             mInfoMediaManager.adjustSessionVolume(session, volume);
@@ -539,6 +549,9 @@ public class LocalMediaManager implements BluetoothCallback {
      * <p>This list does not include any system routing sessions.
      */
     public List<RoutingSessionInfo> getRemoteRoutingSessions() {
+        if (mInfoMediaManager == null) {
+            return Collections.emptyList();
+        }
         return mInfoMediaManager.getRemoteSessions();
     }
 
@@ -555,7 +568,8 @@ public class LocalMediaManager implements BluetoothCallback {
      * Returns {@code true} if needed to enable volume seekbar, otherwise returns {@code false}.
      */
     public boolean shouldEnableVolumeSeekBar(RoutingSessionInfo sessionInfo) {
-        return mInfoMediaManager.shouldEnableVolumeSeekBar(sessionInfo);
+        return mInfoMediaManager != null
+                && mInfoMediaManager.shouldEnableVolumeSeekBar(sessionInfo);
     }
 
     @VisibleForTesting

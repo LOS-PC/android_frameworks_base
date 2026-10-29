@@ -725,6 +725,10 @@ public class BluetoothUtils {
     /** Returns if the device has le audio sharing capability */
     private static boolean isAudioSharingSupported() {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if (adapter == null) {
+            // No Bluetooth on this device
+            return false;
+        }
         try {
             // b/381777424 The APIs have to return ERROR_BLUETOOTH_NOT_ENABLED when BT off based on
             // CDD definition.
